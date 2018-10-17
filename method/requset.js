@@ -3,10 +3,8 @@ const url = require('url');
 const db = require('./db');
 
 
-function checkString(field, min, max) {
-  if (max) return (typeof field === 'string') && field.trim().length >= min && field.trim().length > max && isNaN(field);
-  
-  return (typeof field === 'string') && field.trim().length  >= min && isNaN(field);
+function checkString(field) {
+  return (typeof field === 'string') && field.trim().length && isNaN(field);
 }
 
 function recordCreateList(res, count) {
@@ -21,7 +19,7 @@ function getPostId(res, id) {
   res.writeHead(200, { "Content-Type": "text/json" });
   
   db.readJson((err, arr) => {
-    if (err) return console.log(err);
+    if (err) return res.end({ 'Error': err });
     
     const onlyOne = arr.filter(item => item.id === +id);
     res.end(JSON.stringify(onlyOne));
@@ -32,7 +30,7 @@ function postPost(res) {
   res.writeHead(200, { "Content-Type": "text/json" });
   
   db.readJson((err, arr) => {
-    if (err) return console.log(err);
+    if (err) return res.end({ 'Error': err });
     
     res.end(JSON.stringify(arr));
   });
@@ -42,7 +40,7 @@ function deletePost(res, id) {
   res.writeHead(200, { "Content-Type": "text/plain" });
   
   db.readJson((err, arr) => {
-    if (err) return console.log(err);
+    if (err) return res.end('Error:', err);
     
     let isExists = false;
     
@@ -64,11 +62,30 @@ function deletePost(res, id) {
   });
 }
 
+function putPostBody(res, body) {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  
+  db.readJson((err, arr) => {
+    if (err) return res.end('Error:', err);
+    
+    let lastId = arr[ arr.length - 1 ].id;
+    body.id = lastId + 1;
+    
+    const newData = arr.concat(body);
+    
+    db.updateJson(newData, (err) => {
+      if (err) return res.end('Error:', err);
+      
+      res.end('Success: Record was added');
+    })
+  });
+}
+
 function pathPostIdBody(res, id, body) {
   res.writeHead(200, { "Content-Type": "text/plain" });
   
   db.readJson((err, arr) => {
-    if (err) return console.log(err);
+    if (err) return res.end('Error:', err);
     
     let indexRecord = 0;
     
@@ -88,28 +105,9 @@ function pathPostIdBody(res, id, body) {
     
     db.updateJson(arr, (err) => {
       if (err) return res.end('Error:', err);
-      
+  
       res.end('Success: Record was changed');
     });
-  });
-}
-
-function putPostBody(res, body) {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  
-  db.readJson((err, arr) => {
-    if (err) return console.log(err);
-    
-    let lastId = arr[ arr.length - 1 ].id;
-    body.id = lastId + 1;
-    
-    const newData = arr.concat(body);
-    
-    db.updateJson(newData, (err) => {
-      if (err) return res.end('Error:', err);
-      
-      res.end('Success: Record was added');
-    })
   });
 }
 
@@ -140,29 +138,30 @@ request.server = (req, res) => {
   req.on('end', () => {
     const payload = db.parseJsonToObject(buffer);
     
-    if (!method.includes(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])) {
+    if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
       return notFound(res, `404 Method ${ method } is not found`);
     }
     
     if (pathname === 'users') {
       if (method === 'GET' && query.records && !isNaN(query.records)) { // GET	/users?records=5
         recordCreateList(res, query.records)
-      } else if (method === 'GET' && query.id && !isNaN(query.id)) { // GET	/posts?id=1
+      } else if (method === 'GET' && query.id && !isNaN(query.id)) { // GET	/users?id=1
         getPostId(res, query.id);
-      } else if (method === 'POST') { // POST	/posts
+      } else if (method === 'POST') { // POST	/users
         postPost(res);
       } else if (method === 'DELETE' && query.id && !isNaN(query.id)) { //DELETE /users?id=34
         deletePost(res, query.id);
       } else if (method === 'PUT' && Object.keys(payload).length
-        && checkString(payload.name, 3, 12) && checkString(payload.username, 3, 24)
-        && checkString(payload.avatar, 0) && checkString(payload.email, 8, 20)
-        && checkString(payload.phone, 12, 17)) { //PUT /users
+        && checkString(payload.name) && checkString(payload.username)
+        && checkString(payload.avatar) && checkString(payload.email)
+        && checkString(payload.phone)
+      ) { //PUT /users
         putPostBody(res, payload);
       } else if (method === 'PATCH' && query.id && !isNaN(query.id) && Object.keys(payload).length
-      && (checkString(payload.name, 3, 12) || checkString(payload.username, 3, 24)
-          || checkString(payload.avatar, 0) || checkString(payload.email, 8, 20)
-          || checkString(payload.phone, 12, 17))) { // PATCH	/users?id=34
-        pathPostIdBody(req, query.id, payload);
+      && (checkString(payload.name) || checkString(payload.username)
+          || checkString(payload.avatar) || checkString(payload.email)
+          || checkString(payload.phone))) { // PATCH	/users?id=34
+        pathPostIdBody(res, query.id, payload);
       } else {
         notFound(res);
       }
