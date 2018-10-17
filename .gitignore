@@ -1,4 +1,4 @@
 .idea/
 
-!.data/users.json
+.data/users.json
 .data/*
