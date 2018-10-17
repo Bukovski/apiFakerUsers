@@ -1,137 +1,42 @@
 [
   {
     "id": 0,
-    "name": "Cicero",
-    "username": "Cicero_Maggio",
-    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/denisepires/128.jpg",
-    "email": "Cicero_Maggio19@hotmail.com",
-    "dob": "1947-02-17T11:39:51.661Z",
-    "phone": "980.244.8545",
-    "address": {
-      "street": "Vernon Trafficway",
-      "suite": "Suite 451",
-      "city": "Lake Lilianburgh",
-      "zipcode": "31967-8073",
-      "geo": {
-        "lat": "-74.5406",
-        "lng": "131.2056"
-      }
-    },
-    "website": "annetta.info",
-    "company": {
-      "name": "Kiehn - Mayer",
-      "catchPhrase": "Cloned 6th generation hub",
-      "bs": "transparent expedite convergence"
-    }
+    "name": "Dianna",
+    "username": "Casimer.Gleichner",
+    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/mutu_krish/128.jpg",
+    "email": "Dangelo_Green82@yahoo.com",
+    "phone": "(269) 424-5709"
   },
   {
     "id": 1,
-    "name": "Ford",
-    "username": "Ford_Walter57",
-    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/oksanafrewer/128.jpg",
-    "email": "Ford_Walter57.Kassulke57@yahoo.com",
-    "dob": "1964-02-27T13:03:43.876Z",
-    "phone": "1-767-422-2351 x0451",
-    "address": {
-      "street": "Mohr Prairie",
-      "suite": "Suite 940",
-      "city": "Cronashire",
-      "zipcode": "63572-3545",
-      "geo": {
-        "lat": "87.5889",
-        "lng": "-85.3747"
-      }
-    },
-    "website": "alexie.org",
-    "company": {
-      "name": "Hahn and Sons",
-      "catchPhrase": "Networked cohesive adapter",
-      "bs": "world-class strategize ROI"
-    }
+    "name": "Mertie",
+    "username": "William53",
+    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/johndezember/128.jpg",
+    "email": "Lavon_Schinner@yahoo.com",
+    "phone": "(825) 449-5318"
   },
   {
     "id": 2,
-    "name": "Ozella",
-    "username": "Ozella.Steuber",
-    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/shesgared/128.jpg",
-    "email": "Ozella.Steuber68@gmail.com",
-    "dob": "1984-02-08T10:05:22.094Z",
-    "phone": "1-068-645-1297 x127",
-    "address": {
-      "street": "Sadie Circle",
-      "suite": "Apt. 533",
-      "city": "West Frederik",
-      "zipcode": "69235-5387",
-      "geo": {
-        "lat": "-14.2817",
-        "lng": "-47.6712"
-      }
-    },
-    "website": "kaitlyn.info",
-    "company": {
-      "name": "Reinger, Kshlerin and Stroman",
-      "catchPhrase": "Persevering exuding neural-net",
-      "bs": "synergistic synthesize metrics"
-    }
+    "name": "Helene",
+    "username": "Hayden_Sawayn",
+    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/gmourier/128.jpg",
+    "email": "Waino.Mayert@gmail.com",
+    "phone": "(211) 142-5108"
   },
   {
     "id": 3,
-    "name": "Earnestine",
-    "username": "Earnestine_Konopelski",
-    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/snowshade/128.jpg",
-    "email": "Earnestine_Konopelski.Dach@hotmail.com",
-    "dob": "1968-08-22T12:16:42.924Z",
-    "phone": "719-494-8048",
-    "address": {
-      "street": "Reed Green",
-      "suite": "Suite 964",
-      "city": "South Marcellefurt",
-      "zipcode": "66059",
-      "geo": {
-        "lat": "80.0060",
-        "lng": "-127.4021"
-      }
-    },
-    "website": "trevion.biz",
-    "company": {
-      "name": "Abshire, Wuckert and Haley",
-      "catchPhrase": "Polarised hybrid success",
-      "bs": "plug-and-play engineer paradigms"
-    }
+    "name": "Green",
+    "username": "Owen_Rosenbaum",
+    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/kuldarkalvik/128.jpg",
+    "email": "Donald.Howell@gmail.com",
+    "phone": "(992) 755-6950"
   },
   {
     "id": 4,
-    "name": "Marcus111",
-    "username": "Marcus_Abbott80111323333",
-    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/abotap/128.jpg",
-    "email": "-------Marcus_Abbott80.Rohan89@yahoo.com",
-    "dob": "1968-04-04T08:18:37.391Z",
-    "phone": "2222222222221-463-372-8765 x2557",
-    "address": {
-      "street": "Toy Trail",
-      "suite": "Suite 465",
-      "city": "Yundtfurt",
-      "zipcode": "17382",
-      "geo": {
-        "lat": "-25.4392",
-        "lng": "70.4699"
-      }
-    },
-    "website": "arden.net",
-    "company": {
-      "name": "Thiel, Bernhard and Jones",
-      "catchPhrase": "Multi-tiered asymmetric instruction set",
-      "bs": "collaborative seize solutions"
-    }
-  },
-  {
-    "id": 5,
-    "name": "No name",
-    "ul": "dfdf1512121sdfsafdsf32dsf21ds3df <---------------------------------------------------------------"
-  },
-  {
-    "id": 6,
-    "name": "No name",
-    "ul": "dfdf1512121sdfsafdsf32dsf21ds3df <---------------------------------------------------------------"
+    "name": "Alessia",
+    "username": "Lorine_OConnell",
+    "avatar": "https://s3.amazonaws.com/uifaces/faces/twitter/stefvdham/128.jpg",
+    "email": "Maudie_Kassulke@yahoo.com",
+    "phone": "(196) 839-3791"
   }
 ]

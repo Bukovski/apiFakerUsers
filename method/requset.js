@@ -2,10 +2,129 @@ const { StringDecoder } = require('string_decoder'); //декодирует Buff
 const url = require('url');
 const db = require('./db');
 
+
+function checkString(field, min, max) {
+  if (max) return (typeof field === 'string') && field.trim().length >= min && field.trim().length > max && isNaN(field);
+  
+  return (typeof field === 'string') && field.trim().length  >= min && isNaN(field);
+}
+
+function recordCreateList(res, count) {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  
+  const createRecords = db.generateUserJson(+count);
+  
+  res.end(createRecords ? `Error: Records not create` : `${ count } records was created`);
+}
+
+function getPostId(res, id) {
+  res.writeHead(200, { "Content-Type": "text/json" });
+  
+  db.readJson((err, arr) => {
+    if (err) return console.log(err);
+    
+    const onlyOne = arr.filter(item => item.id === +id);
+    res.end(JSON.stringify(onlyOne));
+  });
+}
+
+function postPost(res) {
+  res.writeHead(200, { "Content-Type": "text/json" });
+  
+  db.readJson((err, arr) => {
+    if (err) return console.log(err);
+    
+    res.end(JSON.stringify(arr));
+  });
+}
+
+function deletePost(res, id) {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  
+  db.readJson((err, arr) => {
+    if (err) return console.log(err);
+    
+    let isExists = false;
+    
+    const withoutOne = arr.filter(item => {
+      if (item.id === +id) {
+        isExists = true;
+      }
+      
+      return item.id !== +id
+    });
+    
+    db.updateJson(withoutOne, (err) => {
+      if (err) return console.log(err);
+      
+      if (isExists) return res.end(`Success: Record #${ id } was deleted`);
+      
+      res.end(`Error: Record #${ id } not exists`);
+    })
+  });
+}
+
+function pathPostIdBody(res, id, body) {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  
+  db.readJson((err, arr) => {
+    if (err) return console.log(err);
+    
+    let indexRecord = 0;
+    
+    arr.every((value, index) => {
+      if (value.id === +id) {
+        indexRecord = index;
+        
+        return false
+      }
+      
+      return true;
+    });
+    
+    const dataRecord = arr[ indexRecord ];
+    
+    arr[ indexRecord ] = Object.assign({}, dataRecord, body);
+    
+    db.updateJson(arr, (err) => {
+      if (err) return res.end('Error:', err);
+      
+      res.end('Success: Record was changed');
+    });
+  });
+}
+
+function putPostBody(res, body) {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  
+  db.readJson((err, arr) => {
+    if (err) return console.log(err);
+    
+    let lastId = arr[ arr.length - 1 ].id;
+    body.id = lastId + 1;
+    
+    const newData = arr.concat(body);
+    
+    db.updateJson(newData, (err) => {
+      if (err) return res.end('Error:', err);
+      
+      res.end('Success: Record was added');
+    })
+  });
+}
+
+function notFound(res, text) {
+  res.writeHead(404, { "Content-Type": "text/plain" });
+  
+  const textMessage = (text) ? text : "404 Data Not Found";
+  res.end(textMessage);
+}
+
+
 const request = {};
 
 request.server = (req, res) => {
-  let { method, headers } = req;
+  let { method } = req;
   let { pathname, query } = url.parse(req.url, true);
   
   const decoder = new StringDecoder('utf-8');
@@ -18,151 +137,40 @@ request.server = (req, res) => {
   pathname = pathname.replace(/^\/+|\/+$/g, '');
   method = method.toUpperCase();
   
-  
   req.on('end', () => {
     const payload = db.parseJsonToObject(buffer);
     
-    if (pathname === 'users') {
-      if (method === 'GET' && query.id && !isNaN(query.id)) { // GET	/posts?id=1
-        res.writeHead(200, { "Content-Type": "text/json" });
-      
-        db.readJson((err, arr) => {
-          if (err) return console.log(err);
-        
-          const onlyOne = arr.filter(item => item.id === +query.id);
-          res.end(JSON.stringify(onlyOne));
-        });
-      
-        // userId(res, address.query.id);
-      } else if (method === 'GET' && query.records && !isNaN(query.records)) { // GET	/users?records=5
-        res.writeHead(200, { "Content-Type": "text/plain" });
-      
-        const createRecords = db.generateUserJson(+query.records);
-      
-        res.end(createRecords ? `Error: Records not create` : `${ query.records } records was created`);
-      
-      } else if (method === 'POST') { // POST	/posts
-        res.writeHead(200, { "Content-Type": "text/json" });
-      
-        db.readJson((err, arr) => {
-          if (err) return console.log(err);
-        
-          res.end(JSON.stringify(arr));
-        });
-      } else if (method === 'DELETE' && query.id && !isNaN(query.id)) { //DELETE /users?id=34
-        res.writeHead(200, { "Content-Type": "text/plain" });
-      
-        db.readJson((err, arr) => {
-          if (err) return console.log(err);
-        
-          let isExists = false;
-        
-          const withoutOne = arr.filter(item => {
-            if (item.id === +query.id) {
-              isExists = true;
-            }
-          
-            return item.id !== +query.id
-          });
-        
-          db.updateJson(withoutOne, (err) => {
-            if (err) return console.log(err);
-          
-            if (isExists) return res.end(`Success: Record #${ query.id } was deleted`);
-          
-            res.end(`Error: Record #${ query.id } not exists`);
-          })
-        });
-      
-      } else if (method === 'PUT' && payload.name) { //PUT /users
-        //сделать проверку на поля json нужно больше полей чтобы запись была добавлена полноценной
-        res.writeHead(200, { "Content-Type": "text/plain" });
-      
-        db.readJson((err, arr) => {
-          if (err) return console.log(err);
-          
-          let lastId = arr[arr.length - 1].id;
-          payload.id = lastId + 1;
-          
-          const newData = arr.concat(payload);
-          
-          db.updateJson(newData, (err) => {
-            if (err) return res.end('Error:', err);
-  
-            res.end('Success: Record was added');
-          })
-        });
-  
-      } else if (method === 'PATCH' && query.id && !isNaN(query.id) && Object.keys(payload).length) { // PATCH	/users?id=34
-        res.writeHead(200, { "Content-Type": "text/plain" });
-  
-        db.readJson((err, arr) => {
-          if (err) return console.log(err);
-  
-          let indexRecord = 0;
-          
-          arr.every((value, index) => {
-            if (value.id === +query.id) {
-              indexRecord = index;
-      
-              return false
-            }
+    if (!method.includes(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])) {
+      return notFound(res, `404 Method ${ method } is not found`);
+    }
     
-            return true;
-          });
-          
-          const dataRecord = arr[indexRecord];
-  
-          arr[indexRecord] = Object.assign({}, dataRecord, payload);
-  
-          db.updateJson(arr, (err) => {
-            if (err) return res.end('Error:', err);
-  
-            res.end('Success: Record was changed');
-          });
-        });
+    if (pathname === 'users') {
+      if (method === 'GET' && query.records && !isNaN(query.records)) { // GET	/users?records=5
+        recordCreateList(res, query.records)
+      } else if (method === 'GET' && query.id && !isNaN(query.id)) { // GET	/posts?id=1
+        getPostId(res, query.id);
+      } else if (method === 'POST') { // POST	/posts
+        postPost(res);
+      } else if (method === 'DELETE' && query.id && !isNaN(query.id)) { //DELETE /users?id=34
+        deletePost(res, query.id);
+      } else if (method === 'PUT' && Object.keys(payload).length
+        && checkString(payload.name, 3, 12) && checkString(payload.username, 3, 24)
+        && checkString(payload.avatar, 0) && checkString(payload.email, 8, 20)
+        && checkString(payload.phone, 12, 17)) { //PUT /users
+        putPostBody(res, payload);
+      } else if (method === 'PATCH' && query.id && !isNaN(query.id) && Object.keys(payload).length
+      && (checkString(payload.name, 3, 12) || checkString(payload.username, 3, 24)
+          || checkString(payload.avatar, 0) || checkString(payload.email, 8, 20)
+          || checkString(payload.phone, 12, 17))) { // PATCH	/users?id=34
+        pathPostIdBody(req, query.id, payload);
       } else {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("404 Data Not Found");
+        notFound(res);
       }
     } else {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("404 Data Not Found");
+      notFound(res);
     }
   });
 };
 
 
-
-
-function userId(res, id) { //http://localhost:3000/user?id=2
-  const inStock = db.filter((item) => {
-    return item.id === +id;
-  });
-  
-  res.end(JSON.stringify(inStock));
-}
-
-
-
-
 module.exports = request;
-
-
-/*
-GET	/posts?userId=1
-POST	/posts
-PUT	/posts/1
-PATCH	/posts/1
-DELETE	/posts/1
-
-Когда клиенту необходимо полностью заменить существующий ресурс, они могут использовать PUT.
-Когда они выполняют частичное обновление, они могут использовать HTTP PATCH.
-
-"id": query.id,
-"name": payload.name,
-"username": payload.username,
-"avatar": payload.avatar,
-"email": payload.email,
-"phone": payload.phone,
- */

@@ -7,14 +7,19 @@ const db = {};
 const dataDir = path.join(__dirname, '../.data/users.json');
 
 function generateData(id) {
-  const userObj = {
-    id: id
+  const fakeData = {
+    "id": id,
+    "name": faker.name.firstName(),
+    "username": faker.internet.userName(),
+    "avatar": faker.image.avatar(),
+    "email": faker.internet.email(),
+    "phone": faker.phone.phoneNumberFormat(1)
   };
   
-  return Object.assign({}, userObj, faker.helpers.contextualCard());
+  return fakeData;
 }
 
-db.parseJsonToObject = (str) => { //просто парсит JSON или вернет пустой обьект
+db.parseJsonToObject = (str) => {
   try {
     const obj = JSON.parse(str);
     
@@ -67,7 +72,7 @@ db.readJson = (callback) => {
     if(err && !data) return callback(err, data);
     
     const parsedData = db.parseJsonToObject(data);
-    callback(false, parsedData); //ошибок нет, передать JSON
+    callback(false, parsedData);
   });
 };
 
