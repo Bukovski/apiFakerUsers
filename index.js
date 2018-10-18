@@ -1,9 +1,9 @@
 const http = require('http');
-const request = require('./method/requset');
+const server = require('./method/server');
 
 
 http.createServer((req, res) => {
-  request.server(req, res);
+  server(req, res);
 }).listen(3000);
 
 console.log('Server started http://localhost:3000/');
