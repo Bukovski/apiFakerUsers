@@ -1,4 +1,4 @@
-const { StringDecoder } = require('string_decoder'); //декодирует Buffer в строку формата UTF-8 или UTF-16
+const { StringDecoder } = require('string_decoder'); //decode Buffer in string UTF-8 or UTF-16
 const url = require('url');
 const db = require('./db');
 const { isString, notFound } = require('./response');
