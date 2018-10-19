@@ -7,7 +7,7 @@ const db = {};
 const dataDir = path.join(__dirname, '../.data/users.json');
 
 function generateData(id) {
-  const fakeData = {
+  return {
     "id": id,
     "name": faker.name.firstName(),
     "username": faker.internet.userName(),
@@ -15,71 +15,77 @@ function generateData(id) {
     "email": faker.internet.email(),
     "phone": faker.phone.phoneNumberFormat(1)
   };
-  
-  return fakeData;
 }
 
 db.parseJsonToObject = (str) => {
   try {
-    const obj = JSON.parse(str);
-    
-    return obj;
+    return JSON.parse(str);
   } catch(e) {
     return {};
   }
 };
 
-db.createJson = (data, callback) => {
-  fs.open(dataDir, 'wx', (err, fileDescriptor) => {
-    if (err && !fileDescriptor) return callback('Could not create new file, it may already exist');
-    const stringData = JSON.stringify(data, undefined, 2);
+db.createJson = (data) => {
+  return new Promise((resolve, reject) => {
+    fs.open(dataDir, 'wx', (err, fileDescriptor) => {
+      if (err && !fileDescriptor) return reject('Could not create new file, it may already exist');
+      const stringData = JSON.stringify(data, undefined, 2);
     
-    fs.writeFile(fileDescriptor, stringData, (err) => {
-      if (err) return callback('Error writing to new file');
-      
-      fs.close(fileDescriptor, (err) => {
-        if (err) return callback('Error closing new file');
-        
-        callback(false);
-      });
-    });
-  });
-};
-
-db.updateJson = (data, callback) => {
-  fs.open(dataDir, 'r+', (err, fileDescriptor) => {
-    if (err && !fileDescriptor) return callback('Could not open file for updating, it may not exist yet');
-    const stringData = JSON.stringify(data, undefined, 2);
-    
-    fs.ftruncate(fileDescriptor, (err) => {
-      if (err) return callback('Error truncating file');
-      
       fs.writeFile(fileDescriptor, stringData, (err) => {
-        if (err) return callback('Error writing to existing file');
-        
+        if (err) return reject('Error writing to new file');
+      
         fs.close(fileDescriptor, (err) => {
-          if (err) return callback('Error closing existing file');
-          
-          callback(false);
+          if (err) return reject('Error closing new file');
+  
+          resolve(true)
         });
       });
     });
   });
 };
 
-db.readJson = (callback) => {
-  fs.readFile(dataDir, 'utf8', (err, data) => {
-    if(err && !data) return callback(err, data);
-    
-    const parsedData = db.parseJsonToObject(data);
-    callback(false, parsedData);
+db.updateJson = (data) => {
+  return new Promise((resolve, reject) => {
+    fs.open(dataDir, 'r+', (err, fileDescriptor) => {
+      if (err && !fileDescriptor) return reject('Could not open file for updating, it may not exist yet');
+      const stringData = JSON.stringify(data, undefined, 2);
+      
+      fs.ftruncate(fileDescriptor, (err) => {
+        if (err) return reject('Error truncating file');
+        
+        fs.writeFile(fileDescriptor, stringData, (err) => {
+          if (err) return reject('Error writing to existing file');
+          
+          fs.close(fileDescriptor, (err) => {
+            if (err) return reject('Error closing existing file');
+  
+            resolve(true)
+          });
+        });
+      });
+    });
   });
 };
 
-db.deleteJson = (callback) => {
-  fs.unlink(dataDir, (err) => {
-    callback(err);
+db.readJson = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(dataDir, 'utf8', (err, data) => {
+      if(err || !data) return reject(err, data);
+    
+      const parsedData = db.parseJsonToObject(data);
+      resolve(parsedData);
+    });
   });
+};
+
+db.deleteJson = () => {
+  return new Promise((resolve, reject) => {
+    fs.unlink(dataDir, (err) => {
+      if (err) return reject(err);
+  
+      resolve(true)
+    });
+  })
 };
 
 db.generateUserJson = (count) => {
@@ -89,13 +95,14 @@ db.generateUserJson = (count) => {
     users = users.concat(generateData(i));
   }
   
-  db.createJson(users, (err) => {
-    if (err) db.updateJson(users, (error) => {
-      if (error) console.log(error);
-    });
-  });
-  
-  return null;
+  return new Promise((resolve, reject) => {
+    db.createJson(users)
+      .then(() => resolve(true))
+      .catch(() => db.updateJson(users)
+        .then(() => resolve(true))
+        .catch((error) => reject(error))
+      )
+  })
 };
 
 
