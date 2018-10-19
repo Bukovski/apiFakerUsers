@@ -37,8 +37,7 @@ function server(req, res) {
     } else if (method === 'PUT' && Object.keys(payload).length
       && isString(payload.name) && isString(payload.username)
       && isString(payload.avatar) && isString(payload.email)
-      && isString(payload.phone)
-    ) { //PUT /users
+      && isString(payload.phone)) { //PUT /users
       putUsersBody(res, payload);
     } else if (method === 'PATCH' && query.id && !isNaN(query.id) && Object.keys(payload).length
       && (isString(payload.name) || isString(payload.username)

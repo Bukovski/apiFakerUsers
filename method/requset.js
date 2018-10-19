@@ -26,68 +26,81 @@ request.postUsers = (res) => {
     .catch((err) => notFound(res, err))
 };
 
-request.deleteUsers = (res, id) => {
-  db.readJson()
-    .then((arr) => {
-      let isExists = false;
-      
-      const withoutOne = arr.filter(item => {
-        if (item.id === +id) {
-          isExists = true;
-        }
-        
-        return item.id !== +id
-      });
-      
-      if (!isExists) return notFound(res, `Record #${ id } not exists`);
-      
-      db.updateJson(withoutOne)
-        .then(() => {
-          return success(res, `Record #${ id } was deleted`)
-        })
-        .catch((err) => notFound(res, err))
-    })
+request.deleteUsers = async (res, id) => {
+  let arr;
+  
+  try {
+    arr = await db.readJson();
+  } catch (e) {
+    return notFound(res, 'No such file or directory');
+  }
+  
+  let isExists = false;
+  
+  const withoutOne = await arr.filter(item => {
+    if (item.id === +id) {
+      isExists = true;
+    }
+    
+    return item.id !== +id
+  });
+  
+  if (!isExists) return notFound(res, `Record #${ id } not exists`);
+  
+  return db.updateJson(withoutOne)
+    .then(() => success(res, `Record #${ id } was deleted`))
+    .catch((err) => notFound(res, 'Could not delete'));
+};
+
+request.putUsersBody = async (res, body) => {
+  let arr;
+  
+  try {
+    arr = await db.readJson();
+  } catch (err) {
+    return notFound(res, err)
+  }
+
+  let lastId = arr[ arr.length - 1 ].id;
+  
+  body.id = lastId + 1;
+  
+  const newData = await arr.concat(body);
+  
+  return db.updateJson(newData)
+    .then(() => success(res, 'Record was added'))
     .catch((err) => notFound(res, err));
 };
 
-request.putUsersBody = (res, body) => {
-  db.readJson((arr) => {
-      let lastId = arr[ arr.length - 1 ].id;
+request.pathUsersIdBody = async (res, id, body) => {
+  let arr;
+  
+  try {
+    arr = await db.readJson();
+  } catch (err) {
+    return notFound(res, err)
+  }
+  
+  let indexRecord = null;
+  
+  arr.every((value, index) => {
+    if (value.id === +id) {
+      indexRecord = index;
       
-      body.id = lastId + 1;
-      
-      const newData = arr.concat(body);
-      
-      db.updateJson(newData)
-        .then(() => success(res, 'Record was added'))
-        .catch((err) => notFound(res, err));
-    })
-    .catch((err) => notFound(res, err))
-};
-
-request.pathUsersIdBody = (res, id, body) => {
-  db.readJson()
-    .then((arr) => {
-      let indexRecord = 0;
-      
-      arr.every((value, index) => {
-        if (value.id === +id) {
-          indexRecord = index;
-          
-          return false
-        }
-        
-        return true;
-      });
-      
-      const dataRecord = arr[ indexRecord ];
-      
-      arr[ indexRecord ] = Object.assign({}, dataRecord, body);
-      
-      db.updateJson(arr)
-        .then(() => success(res, 'Record was changed'))
-        .catch((err) => notFound(res, err))
-    })
+      return false
+    }
+    
+    return true;
+  });
+  
+  if (indexRecord === null) return notFound(res, 'Record not found');
+  
+  const dataRecord = arr[ indexRecord ];
+  
+  arr[ indexRecord ] = Object.assign({}, dataRecord, body);
+  
+  return db.updateJson(arr)
+    .then(() => success(res, 'Record was changed'))
     .catch((err) => notFound(res, err))
 };
 
