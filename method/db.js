@@ -11,16 +11,6 @@ const faker = require('../libs/faker.min.js');
 const db = {};
 const dataDir = path.join(__dirname, '../.data/users.json');
 
-class FileError extends Error {
-  constructor(response) {
-    super(`${response.status} for ${response.url}`);
-    
-    this.name = 'FileError';
-    this.response = response;
-  }
-}
-
-
 function generateData(id) {
   return {
     "id": id,
@@ -46,7 +36,7 @@ db.createJson = async (data) => {
   try {
     fileDescriptor = await open(dataDir, 'wx')
   } catch (e) {
-    throw new FileError('Could not create new file, it may already exist');
+    throw new Error('Could not create new file, it may already exist');
   }
   
   try {
@@ -54,13 +44,13 @@ db.createJson = async (data) => {
     
     await writeFile(fileDescriptor, stringData)
   } catch (e) {
-    throw new FileError('Error writing to new file');
+    throw new Error('Error writing to new file');
   }
   
   try {
     close(fileDescriptor)
   } catch (e) {
-    throw new FileError('Error closing new file');
+    throw new Error('Error closing new file');
   }
 };
 
@@ -70,13 +60,13 @@ db.updateJson = async (data) => {
   try {
     fileDescriptor = await open(dataDir, 'r+')
   } catch (e) {
-    throw new FileError('Could not open file for updating, it may not exist yet');
+    throw new Error('Could not open file for updating, it may not exist yet');
   }
   
   try {
     await ftruncate(fileDescriptor)
   } catch (e) {
-    throw new FileError('Error truncating file');
+    throw new Error('Error truncating file');
   }
   
   try {
@@ -84,20 +74,20 @@ db.updateJson = async (data) => {
     
     await writeFile(fileDescriptor, stringData);
   } catch (e) {
-    throw new FileError('Error writing to existing file');
+    throw new Error('Error writing to existing file');
   }
   
   try {
     close(fileDescriptor)
   } catch (e) {
-    throw new FileError('Error closing new file');
+    throw new Error('Error closing new file');
   }
 };
 
 db.readJson = () => {
   return new Promise((resolve, reject) => {
     fs.readFile(dataDir, 'utf8', (err, data) => {
-      if(err && !data) return reject(new FileError(err));
+      if(err && !data) return reject(new Error(err));
     
       const parsedData = db.parseJsonToObject(data);
       resolve(parsedData);
@@ -108,7 +98,7 @@ db.readJson = () => {
 db.deleteJson = () => {
   return new Promise((resolve, reject) => {
     fs.unlink(dataDir, (err) => {
-      if (err) return reject(new FileError(err));
+      if (err) return reject(new Error(err));
   
       resolve(true)
     });
@@ -128,7 +118,7 @@ db.generateUserJson = async (count) => {
     try {
       db.updateJson(users)
     } catch (err) {
-      throw new FileError(err)
+      throw new Error(err)
     }
   }
 };
