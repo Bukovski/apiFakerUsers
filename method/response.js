@@ -3,19 +3,19 @@ function isString(field) {
 }
 
 function notFound(res, text) {
-  res.writeHead(404, { "Content-Type": "text/plain" });
+  res.writeHead(404, { "Content-Type": "text/json" });
   
   const textMessage = (text) ? text : "404 Data Not Found";
-  res.end(`Error: ${ textMessage }`);
+  res.end(JSON.stringify({ 'Error': textMessage }));
 }
 
 function success(res, text, isJson = false) {
+  res.writeHead(200, { "Content-Type": "text/json" });
+  
   if (isJson) {
-    res.writeHead(200, { "Content-Type": "text/json" });
     res.end(JSON.stringify(text));
   } else {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(`Success: ${ text }`);
+    res.end(JSON.stringify({ 'Success': text }));
   }
 }
 

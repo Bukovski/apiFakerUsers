@@ -8,7 +8,7 @@ const { deleteUsers, getUsersId,
 
 
 function server(req, res) {
-  let { method } = req;
+  let { method, headers } = req;
   let { pathname, query } = url.parse(req.url, true);
   
   const decoder = new StringDecoder('utf-8');
@@ -23,6 +23,11 @@ function server(req, res) {
   
   req.on('end', () => {
     const payload = db.parseJsonToObject(buffer);
+  
+    //cors
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
     
     if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(method) || pathname !== 'users') return notFound(res, `404 Method: ${ method } or path: ${ pathname } is not found`);
     
