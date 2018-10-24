@@ -1,8 +1,9 @@
 const { StringDecoder } = require('string_decoder'); //decode Buffer in string UTF-8 or UTF-16
 const url = require('url');
+const path = require('path');
 const db = require('./db');
 const { isString, notFound } = require('./response');
-const { deleteUsers, getUsersId,
+const { getCors, deleteUsers, getUsersId,
   pathUsersIdBody, postUsers,
   putUsersBody, recordCreateList } = require('./requset');
 
@@ -14,6 +15,8 @@ function server(req, res) {
   const decoder = new StringDecoder('utf-8');
   let buffer = '';
   
+  getCors(res);
+  
   req.on('data', (data) => {
     buffer += decoder.write(data);
   });
@@ -22,35 +25,40 @@ function server(req, res) {
   method = method.toUpperCase();
   
   req.on('end', () => {
+    buffer += decoder.end();
+    
     const payload = db.parseJsonToObject(buffer);
-  
-    //cors
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
     
-    if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(method) || pathname !== 'users') return notFound(res, `404 Method: ${ method } or path: ${ pathname } is not found`);
+    const basePath = __dirname + '/../public/';
+    const pathToFile = path.normalize(basePath + pathname);
     
-    if (method === 'GET' && query.records && !isNaN(query.records)) { // GET	/users?records=5
-      recordCreateList(res, query.records)
-    } else if (method === 'GET' && query.id && !isNaN(query.id)) { // GET	/users?id=1
-      getUsersId(res, query.id);
-    } else if (method === 'POST') { // POST	/users
-      postUsers(res);
-    } else if (method === 'DELETE' && query.id && !isNaN(query.id)) { //DELETE /users?id=34
-      deleteUsers(res, query.id);
-    } else if (method === 'PUT' && Object.keys(payload).length
-      && isString(payload.name) && isString(payload.username)
-      && isString(payload.avatar) && isString(payload.email)
-      && isString(payload.phone)) { //PUT /users
-      putUsersBody(res, payload);
-    } else if (method === 'PATCH' && query.id && !isNaN(query.id) && Object.keys(payload).length
-      && (isString(payload.name) || isString(payload.username)
-        || isString(payload.avatar) || isString(payload.email)
-        || isString(payload.phone))) { // PATCH	/users?id=34
-      pathUsersIdBody(res, query.id, payload);
+    if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) return notFound(res, `404 Method: ${ method } or path: ${ pathname } is not found`);
+    
+    if (pathname === 'users') {
+      if (method === 'GET' && query.records && !isNaN(query.records)) { // GET	/users?records=5
+        recordCreateList(res, query.records)
+      } else if (method === 'GET' && query.id && !isNaN(query.id)) { // GET	/users?id=1
+        getUsersId(res, query.id);
+      } else if (method === 'POST') { // POST	/users
+        postUsers(res);
+      } else if (method === 'DELETE' && query.id && !isNaN(query.id)) { //DELETE /users?id=34
+        deleteUsers(res, query.id);
+      } else if (method === 'PUT' && Object.keys(payload).length
+        && isString(payload.name) && isString(payload.username)
+        && isString(payload.avatar) && isString(payload.email)
+        && isString(payload.phone)
+      ) { //PUT /users
+        putUsersBody(res, payload);
+      } else if (method === 'PATCH' && query.id && !isNaN(query.id) && Object.keys(payload).length
+        && (isString(payload.name) || isString(payload.username)
+          || isString(payload.avatar) || isString(payload.email)
+          || isString(payload.phone))) { // PATCH	/users?id=34
+        pathUsersIdBody(res, query.id, payload);
+      } else {
+        notFound(res);
+      }
     } else {
-      notFound(res);
+      db.getTemplate(res, pathname, pathToFile);
     }
   });
 }

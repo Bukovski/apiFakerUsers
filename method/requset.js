@@ -4,6 +4,13 @@ const { notFound, success } = require('./response');
 
 const request = {};
 
+request.getCors = (res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH,OPTIONS");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+};
+
 request.recordCreateList = (res, count) => {
   db.generateUserJson(+count)
     .then(() => success(res, `${ count } records was created`))

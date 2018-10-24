@@ -6,6 +6,7 @@ const close = promisify(fs.close);
 const ftruncate = promisify(fs.ftruncate);
 const writeFile = promisify(fs.writeFile);
 const faker = require('../libs/faker.min.js');
+const { notFound } = require('./response');
 
 
 const db = {};
@@ -123,5 +124,31 @@ db.generateUserJson = async (count) => {
   }
 };
 
+db.getTemplate = (res, httpPath, filePath) => {
+  fs.stat(filePath, function(err, stats) {
+    if (err) {
+      notFound(res);
+    } else if (stats.isFile()) {
+      const mimeTypes = {
+        '.js'  : 'text/javascript',
+        '.html': 'text/html',
+        '.css' : 'text/css',
+        '.jpg' : 'image/jpeg',
+        '.gif' : 'image/gif',
+        '.png' : 'image/png'
+      };
+      const mimeType = mimeTypes[path.extname(httpPath)];
+      
+      fs.readFile(filePath, 'utf8', function (err, data) {
+        if(err) {
+          notFound(res, 'Could not lind or open lile '+ pathname + ' for reading');
+        } else {
+          res.writeHead( 200, {'Content-Type': mimeType});
+          res.end(data);
+        }
+      })
+    }
+  });
+};
 
 module.exports = db;
