@@ -6,7 +6,7 @@ const { isString, notFound } = require('./response');
 const { getCors, deleteUsers, getUsersId,
   pathUsersIdBody, postUsers,
   putUsersBody, recordCreateList } = require('./requset');
-const {} = require('./auth');
+const { postAuth, getAuth } = require('./auth');
 
 
 function server(req, res) {
@@ -60,10 +60,10 @@ function server(req, res) {
         notFound(res);
       }
     } else if (pathname === 'auth') {
-      if (method === 'GET' && query.auth) { // GET	/users?records=5
-        // recordCreateList(res, query.auth)
-      } else if (method === 'POST') { // POST	/users
-        // postUsers(res);
+      if (method === 'GET' && query.email && query.password) { // GET	/auth?email=johndou@mail.ru&password=112233
+        getAuth(res, query);
+      } else if (method === 'POST') { // POST	/auth
+        postAuth(res, payload);
       } else {
         notFound(res);
       }

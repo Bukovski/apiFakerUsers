@@ -8,7 +8,7 @@ const config = {
 
 
 // Parse a JSON string to an object in all cases, without throwing
-helpers.parseJsonToObject = function(str) {
+helpers.parseJsonToObject = (str) => {
   try{
     return JSON.parse(str);
   } catch(e){
@@ -17,7 +17,7 @@ helpers.parseJsonToObject = function(str) {
 };
 
 // Create a SHA256 hash
-helpers.hash = function(str) {
+helpers.hash = (str) => {
   if (typeof(str) === 'string' && str.length > 0) {
     return crypto.createHmac('sha256', config.hashingSecret)
       .update(str).digest('hex');
@@ -25,6 +25,26 @@ helpers.hash = function(str) {
     return false;
   }
 };
+
+helpers.createRandomString = (strLength) => {
+  strLength = (typeof strLength === 'number') && strLength > 0 ? strLength : false;
+  
+  if (strLength) {
+    const possibleCharacters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const possibleLength = possibleCharacters.length;
+    
+    let str = '';
+    
+    for (let i = 0; i < strLength; i++) {
+      str += possibleCharacters[(Math.floor(Math.random() * possibleLength))];
+    }
+    
+    return str;
+  } else {
+    return false;
+  }
+};
+
 
 
 module.exports = helpers;
