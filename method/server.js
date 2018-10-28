@@ -6,6 +6,7 @@ const { isString, notFound } = require('./response');
 const { getCors, deleteUsers, getUsersId,
   pathUsersIdBody, postUsers,
   putUsersBody, recordCreateList } = require('./requset');
+const {} = require('./auth');
 
 
 function server(req, res) {
@@ -27,8 +28,9 @@ function server(req, res) {
   req.on('end', () => {
     buffer += decoder.end();
     
-    const payload = db.parseJsonToObject(buffer);
+    if (!pathname) pathname = 'index.html';
     
+    const payload = db.parseJsonToObject(buffer);
     const basePath = __dirname + '/../public/';
     const pathToFile = path.normalize(basePath + pathname);
     
@@ -54,6 +56,14 @@ function server(req, res) {
           || isString(payload.avatar) || isString(payload.email)
           || isString(payload.phone))) { // PATCH	/users?id=34
         pathUsersIdBody(res, query.id, payload);
+      } else {
+        notFound(res);
+      }
+    } else if (pathname === 'auth') {
+      if (method === 'GET' && query.auth) { // GET	/users?records=5
+        // recordCreateList(res, query.auth)
+      } else if (method === 'POST') { // POST	/users
+        // postUsers(res);
       } else {
         notFound(res);
       }

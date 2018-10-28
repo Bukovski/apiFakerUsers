@@ -18,7 +18,7 @@ request.recordCreateList = (res, count) => {
 };
 
 request.getUsersId = (res, id) => {
-  db.readJson()
+  db.readJson('users')
     .then((arr) => {
       const onlyOne = arr.filter(item => item.id === +id);
       
@@ -28,7 +28,7 @@ request.getUsersId = (res, id) => {
 };
 
 request.postUsers = (res) => {
-  db.readJson()
+  db.readJson('users')
     .then((arr) => success(res, arr, true))
     .catch((err) => notFound(res, err))
 };
@@ -37,7 +37,7 @@ request.deleteUsers = async (res, id) => {
   let arr;
   
   try {
-    arr = await db.readJson();
+    arr = await db.readJson('users');
   } catch (e) {
     return notFound(res, 'No such file or directory');
   }
@@ -54,7 +54,7 @@ request.deleteUsers = async (res, id) => {
   
   if (!isExists) return notFound(res, `Record #${ id } not exists`);
   
-  return db.updateJson(withoutOne)
+  return db.updateJson(withoutOne, 'users')
     .then(() => success(res, `Record #${ id } was deleted`))
     .catch((err) => notFound(res, 'Could not delete'));
 };
@@ -63,7 +63,7 @@ request.putUsersBody = async (res, body) => {
   let arr;
   
   try {
-    arr = await db.readJson();
+    arr = await db.readJson('users');
   } catch (err) {
     return notFound(res, err)
   }
@@ -74,7 +74,7 @@ request.putUsersBody = async (res, body) => {
   
   const newData = await arr.concat(body);
   
-  return db.updateJson(newData)
+  return db.updateJson(newData, 'users')
     .then(() => success(res, 'Record was added'))
     .catch((err) => notFound(res, err));
 };
@@ -83,7 +83,7 @@ request.pathUsersIdBody = async (res, id, body) => {
   let arr;
   
   try {
-    arr = await db.readJson();
+    arr = await db.readJson('users');
   } catch (err) {
     return notFound(res, err)
   }
@@ -106,7 +106,7 @@ request.pathUsersIdBody = async (res, id, body) => {
   
   arr[ indexRecord ] = Object.assign({}, dataRecord, body);
   
-  return db.updateJson(arr)
+  return db.updateJson(arr, 'users')
     .then(() => success(res, 'Record was changed'))
     .catch((err) => notFound(res, err))
 };

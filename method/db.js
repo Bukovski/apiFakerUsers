@@ -10,7 +10,7 @@ const { notFound } = require('./response');
 
 
 const db = {};
-const dataDir = path.join(__dirname, '../.data/users.json');
+const dataDir = path.join(__dirname, '../.data/');
 
 function generateData(id) {
   return {
@@ -31,11 +31,11 @@ db.parseJsonToObject = (str) => {
   }
 };
 
-db.createJson = async (data) => {
+db.createJson = async (data, fileDir) => {
   let fileDescriptor;
   
   try {
-    fileDescriptor = await open(dataDir, 'wx')
+    fileDescriptor = await open(dataDir + fileDir + '.json', 'wx')
   } catch (e) {
     throw new Error('Could not create new file, it may already exist');
   }
@@ -55,11 +55,11 @@ db.createJson = async (data) => {
   }
 };
 
-db.updateJson = async (data) => {
+db.updateJson = async (data, fileDir) => {
   let fileDescriptor;
   
   try {
-    fileDescriptor = await open(dataDir, 'r+')
+    fileDescriptor = await open(dataDir + fileDir + '.json', 'r+')
   } catch (e) {
     throw new Error('Could not open file for updating, it may not exist yet');
   }
@@ -85,9 +85,9 @@ db.updateJson = async (data) => {
   }
 };
 
-db.readJson = () => {
+db.readJson = (fileDir) => {
   return new Promise((resolve, reject) => {
-    fs.readFile(dataDir, 'utf8', (err, data) => {
+    fs.readFile(dataDir + fileDir + '.json', 'utf8', (err, data) => {
       if(err && !data) return reject(new Error(err));
     
       const parsedData = db.parseJsonToObject(data);
@@ -96,9 +96,9 @@ db.readJson = () => {
   });
 };
 
-db.deleteJson = () => {
+db.deleteJson = (fileDir) => {
   return new Promise((resolve, reject) => {
-    fs.unlink(dataDir, (err) => {
+    fs.unlink(dataDir + fileDir + '.json', (err) => {
       if (err) return reject(new Error(err));
   
       resolve(true)
@@ -114,10 +114,10 @@ db.generateUserJson = async (count) => {
   }
   
   try {
-    await db.createJson(users)
+    await db.createJson(users, 'users')
   } catch (e) {
     try {
-      db.updateJson(users)
+      db.updateJson(users, 'users')
     } catch (err) {
       throw new Error(err)
     }
@@ -147,6 +147,8 @@ db.getTemplate = (res, httpPath, filePath) => {
           res.end(data);
         }
       })
+    } else {
+      notFound(res);
     }
   });
 };
